@@ -1,2 +1,2 @@
 # Pong Wars
-a collaborative project between https://github.com/Kronus8
+- A collaborative project between [@r-miljons](https://github.com/r-miljons) & [@Kronus8](https://github.com/Kronus8)
