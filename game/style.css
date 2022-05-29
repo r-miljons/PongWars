@@ -23,6 +23,8 @@ body {
     display: flex;
     flex-direction: column;
     padding: 1rem;
+    overflow: hidden;
+    box-shadow: 0 0 2rem black;
 }
 
 #title-text {
@@ -67,10 +69,16 @@ body {
 
 .change {
     font-size: 2rem;
+    transition: all 300ms;
 }
 
 .change:hover {
     cursor: pointer;
+    transform: scale(1.2);
+}
+
+.change:active {
+    transform: scale(0.8);
 }
 
 .color-name {
@@ -93,6 +101,7 @@ body {
     padding: 0.5rem 1rem;
     font-family: 'arc-o', sans-serif;
     font-size: 2rem;
+    border-radius: 0.3rem;
 }
 
 #play-btn:hover {
