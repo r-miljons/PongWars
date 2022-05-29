@@ -1,0 +1,53 @@
+@font-face {
+    font-family: 'arc-o';
+    src: url('./assets/OCR-A\ Regular.ttf') format('truetype');
+  }
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    background-color: rgb(60, 60, 60);
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'arc-o', sans-serif;
+    word-spacing: -1rem;
+}
+
+.container {
+    text-align: center;
+}
+
+.container h1 {
+    font-size: 4rem;
+    margin-bottom: 2rem;
+    color: white;
+}
+
+.start-game {
+    padding: 1rem;
+    border-radius: 0.3rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.github-logo {
+    position: absolute;
+    filter: invert(1);
+    width: 4rem;
+    bottom: 1rem;
+    right: 1rem;
+    transition: all 300ms;
+}
+
+.github-logo:hover {
+    transform: scale(1.2);
+}
