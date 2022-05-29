@@ -42,8 +42,6 @@ const leftPaddleColor = {
     colorIndex: 0
 }
 
-console.log(leftPaddleColor.availableColors.length);
-
 const rightPaddleColor = {
     availableColors: ["rgb(225, 225, 225)", "rgb(0, 255, 8)", "rgb(0, 174, 255)", "rgb(204, 0, 255)", "rgb(255, 0, 13)", "rgb(255, 234, 0)"],
     colorName: ["white", "green", "blue", "purple", "red", "yellow"],
@@ -75,6 +73,7 @@ function updateLeftPaddleColor() {
 function updateRightPaddleColor() {
     rightPaddleMenu.style.backgroundColor = rightPaddleColor.availableColors[rightPaddleColor.colorIndex];
     playerTwoColorText.textContent = rightPaddleColor.colorName[rightPaddleColor.colorIndex];
+    console.log(rightPaddleColor.colorIndex);
 }
 
 function changePaddleColorKeyboard(event) {
@@ -95,23 +94,33 @@ function changePaddleColorKeyboard(event) {
     }
 }
 
-
-
 document.addEventListener("keydown", changePaddleColorKeyboard);
 
-/* PROBLEM: can't change the color with mouse, the values update only once
+previousLeft.addEventListener("click", leftClickEventUpdatePaddleColor);
 
-previousLeft.addEventListener("click", changeLeft(leftPaddleColor));
-previousLeft.addEventListener("click", updateLeftPaddleColor);
+nextLeft.addEventListener("click", leftClickEventUpdatePaddleColor);
 
-nextLeft.addEventListener("click", changeRight(leftPaddleColor));
-nextLeft.addEventListener("click", updateLeftPaddleColor);
+previousRight.addEventListener("click", rightClickEventUpdatePaddleColor);
 
-previousRight.addEventListener("click", changeLeft(rightPaddleColor));
-previousRight.addEventListener("click", updateRightPaddleColor);
+nextRight.addEventListener("click", rightClickEventUpdatePaddleColor);
 
-nextRight.addEventListener("click", changeRight(rightPaddleColor));
-nextRight.addEventListener("click", updateRightPaddleColor);
+function leftClickEventUpdatePaddleColor() {
+    changeLeft(leftPaddleColor);
+    updateLeftPaddleColor();
+}
+
+function rightClickEventUpdatePaddleColor() {
+    changeRight(rightPaddleColor);
+    updateRightPaddleColor();
+}
+
+/*
+
+NOTE: Can also be done like this.
+
+previousRight.addEventListener("click", function() {
+    changeRight(rightPaddleColor);
+    updateRightPaddleColor();
+});
 
 */
-
