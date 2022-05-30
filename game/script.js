@@ -96,31 +96,29 @@ function changePaddleColorKeyboard(event) {
 
 document.addEventListener("keydown", changePaddleColorKeyboard);
 
-previousLeft.addEventListener("click", leftClickEventUpdatePaddleColor);
-
-nextLeft.addEventListener("click", leftClickEventUpdatePaddleColor);
-
-previousRight.addEventListener("click", rightClickEventUpdatePaddleColor);
-
-nextRight.addEventListener("click", rightClickEventUpdatePaddleColor);
-
-function leftClickEventUpdatePaddleColor() {
+previousLeft.addEventListener("click", function () {
     changeLeft(leftPaddleColor);
     updateLeftPaddleColor();
-}
+});
 
-function rightClickEventUpdatePaddleColor() {
-    changeRight(rightPaddleColor);
+nextLeft.addEventListener("click", function () {
+    changeRight(leftPaddleColor);
+    updateLeftPaddleColor();
+});
+
+previousRight.addEventListener("click", function () {
+    changeLeft(rightPaddleColor);
     updateRightPaddleColor();
-}
+});
 
-/*
-
-NOTE: Can also be done like this.
-
-previousRight.addEventListener("click", function() {
+nextRight.addEventListener("click", function () {
     changeRight(rightPaddleColor);
     updateRightPaddleColor();
 });
 
-*/
+
+
+
+
+
+
