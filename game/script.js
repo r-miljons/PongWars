@@ -116,6 +116,65 @@ nextRight.addEventListener("click", function () {
     updateRightPaddleColor();
 });
 
+// move ball relative to it's parent element using percentage values for translateX and translateY 
+// default behavior: percentage values correspond to the height and width of the element itself not the available space in the parent container
+
+const gameBox = document.querySelector(".game");
+const ball = document.querySelector(".ball");
+const trail = document.querySelector(".ball-trail");
+
+function ballY(percent)  {
+    let Y;
+    if (percent == 0) {
+        Y = (gameBox.clientHeight -24) * 0;
+        return Y;
+    } else if (percent < 0 && percent >= -100) {
+        let multiplier = ((percent * -1) / 100) * 0.5;
+        Y = (gameBox.clientHeight -24) * multiplier;
+        return Y;
+    } else if (percent > 0 && percent <= 100) {
+        let multiplier = (percent / 100) * 0.5;
+        Y = (gameBox.clientHeight -24) * (multiplier * -1);
+        return Y;
+    } else {
+        console.log("Error: invalid height value");
+    } 
+}
+
+function ballX(percent)  {
+    let X;
+    if (percent == 0) {
+        X = (gameBox.clientWidth -24) * 0;
+        return X;
+    } else if (percent < 0 && percent >= -100) {
+        let multiplier = ((percent * -1) / 100) * 0.5;
+        X = (gameBox.clientWidth -24) * (multiplier * -1);
+        return X;
+    } else if (percent > 0 && percent <= 100) {
+        let multiplier = (percent / 100) * 0.5;
+        X = (gameBox.clientWidth -24) * multiplier;
+        return X;
+    } else {
+        console.log("Error: invalid width value");
+    } 
+}
+
+// call this function with values from 100 to -100
+
+function moveBall(X,Y) {
+    let moveX = ballX(X);
+    let moveY = ballY(Y);
+    trail.style.webkitTransform = `translateX(${moveX}px) translateY(${moveY}px)`;
+    ball.style.webkitTransform = `translateX(${moveX}px) translateY(${moveY}px)`;
+}
+
+
+
+
+
+
+
+
 
 
 
