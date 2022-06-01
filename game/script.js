@@ -78,7 +78,6 @@ function updateRightPaddleColor() {
 
 function changePaddleColorKeyboard(event) {
     let keypressed = event.code;
-    console.log(keypressed);
     if (keypressed == "KeyA") {
         changeLeft(leftPaddleColor);
         updateLeftPaddleColor();
@@ -116,59 +115,275 @@ nextRight.addEventListener("click", function () {
     updateRightPaddleColor();
 });
 
-// move ball relative to it's parent element using percentage values for translateX and translateY 
-// default behavior: percentage values correspond to the height and width of the element itself not the available space in the parent container
+// ball movement, paddle movement collision detection
 
 const gameBox = document.querySelector(".game");
 const ball = document.querySelector(".ball");
 const trail = document.querySelector(".ball-trail");
+const leftPaddle = document.querySelector(".left-paddle");
+const rightPaddle = document.querySelector(".right-paddle");
 
-function ballY(percent)  {
-    let Y;
-    if (percent == 0) {
-        Y = (gameBox.clientHeight -24) * 0;
-        return Y;
-    } else if (percent < 0 && percent >= -100) {
-        let multiplier = ((percent * -1) / 100) * 0.5;
-        Y = (gameBox.clientHeight -24) * multiplier;
-        return Y;
-    } else if (percent > 0 && percent <= 100) {
-        let multiplier = (percent / 100) * 0.5;
-        Y = (gameBox.clientHeight -24) * (multiplier * -1);
-        return Y;
-    } else {
-        console.log("Error: invalid height value");
-    } 
+// ball movement
+
+const ballData = {
+    _radius: 12,
+    _X: gameBox.clientWidth/2,
+    _Y: gameBox.clientHeight/2,
+    get radius() {
+        return this._radius;
+    },
+    get X() {
+        return this._X;
+    },
+    get Y() {
+        return this._Y;
+    },
+    set radius(radius) {
+        this._radius = radius;
+    },
+    set X(number) {
+        this._X = number;
+    },
+    set Y(number) {
+        this._Y = number;
+    }
 }
+
+// function for positioning the ball, ballX and BallY are not meant to be used directly
+// use moveBall(X, Y) for testing purposes
 
 function ballX(percent)  {
     let X;
     if (percent == 0) {
-        X = (gameBox.clientWidth -24) * 0;
-        return X;
-    } else if (percent < 0 && percent >= -100) {
-        let multiplier = ((percent * -1) / 100) * 0.5;
-        X = (gameBox.clientWidth -24) * (multiplier * -1);
+        X = 0;
+        ball.style.left = 0 + "px";
+        trail.style.left = 0 + "px";
+        ballData.X = X;
         return X;
     } else if (percent > 0 && percent <= 100) {
-        let multiplier = (percent / 100) * 0.5;
-        X = (gameBox.clientWidth -24) * multiplier;
+        X = (percent/100) * (gameBox.clientWidth - (ballData.radius*2));
+        ball.style.left = X + "px";
+        trail.style.left = X + "px";
+        ballData.X = X;
         return X;
-    } else {
-        console.log("Error: invalid width value");
     } 
 }
 
-// call this function with values from 100 to -100
 
-function moveBall(X,Y) {
-    let moveX = ballX(X);
-    let moveY = ballY(Y);
-    trail.style.webkitTransform = `translateX(${moveX}px) translateY(${moveY}px)`;
-    ball.style.webkitTransform = `translateX(${moveX}px) translateY(${moveY}px)`;
+
+function ballY(percent)  {
+    let Y;
+    if (percent == 0) {
+        Y = 0;
+        ball.style.top = Y + "px";
+        trail.style.top = Y + "px";
+        ballData.Y = Y;
+        return Y;
+    } else if (percent > 0 && percent <= 100) {
+        Y = (percent/100) * (gameBox.clientHeight -(ballData.radius*2))
+        ball.style.top =  Y + "px";
+        trail.style.top = Y + "px";
+        ballData.Y = Y;
+        return Y;
+    } 
+}
+
+function moveBall(X, Y) {
+    ball.style.left = ballX(X) + "px";
+    ball.style.top = ballY(Y) + "px";
+}
+
+// paddle movement
+
+let leftPaddleActive = false;
+let rightPaddleActive = false;
+
+const leftPaddleData = {
+    _height: 128,
+    _speed: 0.5,
+    _Y: leftPaddle.offsetTop + this._height/2,
+    get height() {
+        return this._height;
+    },
+    get speed() {
+        return this._speed;
+    },
+    get Y() {
+        return this._Y;
+    },
+    set height(number) {
+        this._height = number;
+    },
+    set speed(number) {
+        this._speed = number;
+    },
+    set Y(number) {
+        this._Y = number;
+    }
+}
+
+const rightPaddleData = {
+    _height: 128,
+    _speed: 0.5,
+    _Y: [],
+    get height() {
+        return this._height;
+    },
+    get speed() {
+        return this._speed;
+    },
+    get Y() {
+        return this._Y;
+    },
+    set height(number) {
+        this._height = number;
+    },
+    set speed(number) {
+        this._speed = number;
+    },
+    set Y(number) {
+        this._Y = number;
+    }
+}
+
+// setting initial Y position for paddles
+
+leftPaddleData.Y = leftPaddle.offsetTop + leftPaddleData.height/2;
+rightPaddleData.Y = rightPaddle.offsetTop + rightPaddleData.height/2;
+
+// input 0-100 to position the paddles
+// returns: height from top to the center of the paddles
+
+function leftPaddleY(percent) {
+    let Y;
+    if (percent == 0) {
+        Y = 0;
+        leftPaddle.style.top = Y + "px";
+        leftPaddleData.Y = Y + leftPaddleData.height/2;
+        return Y + leftPaddleData.height/2;
+    } else if (percent > 0 && percent <= 100) {
+        Y = (percent/100) * (gameBox.clientHeight - (leftPaddleData.height));
+        leftPaddle.style.top = Y + "px";
+        leftPaddleData.Y = Y + leftPaddleData.height/2;
+        return Y + leftPaddleData.height/2;
+    }
+}
+
+function rightPaddleY(percent) {
+    let Y;
+    if (percent == 0) {
+        Y = 0;
+        rightPaddle.style.top = Y + "px";
+        rightPaddleData.Y = Y + rightPaddleData.height/2;
+        return Y + rightPaddleData.height/2;
+    } else if (percent > 0 && percent <= 100) {
+        Y = (percent/100) * (gameBox.clientHeight - (rightPaddleData.height));
+        rightPaddle.style.top = Y + "px";
+        rightPaddleData.Y = Y + rightPaddleData.height/2;
+        return Y + rightPaddleData.height/2;
+    }
+}
+
+// move the paddles using "w" and "s" or "↑" and "↓"
+
+let leftPaddleCurrentY = 50;
+let rightPaddleCurrentY = 50;
+
+function moveLeftPaddle(event) {
+    leftPaddleActive = true;
+    let keypressed = event.code;
+    if (keypressed == "KeyW") {
+        let move = setInterval(()=>{
+            if (leftPaddleCurrentY > 0) {
+                leftPaddleY(leftPaddleCurrentY -= leftPaddleData.speed);
+            }
+            if (leftPaddleActive == false) {
+                clearInterval(move);
+            }
+        }, 1)
+    } else if (keypressed == "KeyS") {
+        let move = setInterval(()=>{
+            if (leftPaddleCurrentY < 100) {
+                leftPaddleY(leftPaddleCurrentY += leftPaddleData.speed);
+            }
+            if (leftPaddleActive == false) {
+                clearInterval(move);
+            }
+        }, 1)
+    }
+}
+
+function moveRightPaddle(event) {
+    rightPaddleActive = true;
+    let keypressed = event.code;
+    if (keypressed == "ArrowUp") {
+        let move = setInterval(()=>{
+            if (rightPaddleCurrentY > 0) {
+                rightPaddleY(rightPaddleCurrentY -= rightPaddleData.speed);
+            }
+            if (rightPaddleActive == false) {
+                clearInterval(move);
+            }
+        }, 1)
+    } else if (keypressed == "ArrowDown") {
+        let move = setInterval(()=>{
+            if (rightPaddleCurrentY < 100) {
+                rightPaddleY(rightPaddleCurrentY += rightPaddleData.speed);
+            }
+            if (rightPaddleActive == false) {
+                clearInterval(move);
+            }
+        }, 1)
+    }
+}
+
+function stopPaddle(event) {
+    let keyreleased = event.code;
+    if (keyreleased == "KeyW" || keyreleased == "KeyS") {
+        leftPaddleActive = false;
+    } else if (keyreleased == "ArrowUp" || keyreleased == "ArrowDown") {
+        rightPaddleActive = false;
+    }
+}
+
+document.addEventListener("keyup", stopPaddle);
+document.addEventListener("keydown", moveLeftPaddle);
+document.addEventListener("keydown", moveRightPaddle);
+
+
+
+// collision detection
+
+function detectCollision() {
+    if (0) {
+        console.log("looking for left paddle");
+    }
+    if (0) {
+        console.log("looking for right paddle");
+    }
+    if (ballData.Y >= gameBox.clientHeight - (ballData.radius*2)) {
+        console.log("ball hits bottom");
+    }
+    if (ballData.Y <= 0) {
+        console.log("ball hits top");
+    }
+    if (ballData.X <= 0) {
+        console.log("player two scores");
+    }
+    if (ballData.X >= gameBox.clientWidth - (ballData.radius*2)) {
+        console.log("player one scores");
+    }
 }
 
 
+detectCollision();
+
+/*
+ball.style.left = `${0}px`;
+*/
+
+console.log("center of screen:", gameBox.clientWidth/2, gameBox.clientHeight/2);
+console.log("ball X:",ballData.X,"ballY:", ballData.Y);
 
 
 
