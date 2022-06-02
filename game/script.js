@@ -1,3 +1,5 @@
+// menu screen ----------------------------------------------------
+
 //pressing play pulls the menu upwards revealing the game
 
 const playButton = document.getElementById("play-btn");
@@ -115,7 +117,7 @@ nextRight.addEventListener("click", function () {
     updateRightPaddleColor();
 });
 
-// ball movement, paddle movement collision detection
+// ball movement, paddle movement collision detection ----------------------------------------------------------------
 
 const gameBox = document.querySelector(".game");
 const ball = document.querySelector(".ball");
@@ -123,7 +125,7 @@ const trail = document.querySelector(".ball-trail");
 const leftPaddle = document.querySelector(".left-paddle");
 const rightPaddle = document.querySelector(".right-paddle");
 
-// ball movement
+// ball movement -------------------------------
 
 const ballData = {
     _radius: 12,
@@ -150,7 +152,7 @@ const ballData = {
 }
 
 // function for positioning the ball, ballX and BallY are not meant to be used directly
-// use moveBall(X, Y) for testing purposes
+// use moveBall(X, Y) input values from 0 to 100 relative to the top left corner
 
 function ballX(percent)  {
     let X;
@@ -188,19 +190,21 @@ function ballY(percent)  {
     } 
 }
 
+// x and y for the ball are the left and top sides of the ball respectively
+
 function moveBall(X, Y) {
-    ball.style.left = ballX(X) + "px";
-    ball.style.top = ballY(Y) + "px";
+    ballX(X);
+    ballY(Y);
 }
 
-// paddle movement
+// paddle movement --------------------------------
 
-
+// data about the paddles
 
 const leftPaddleData = {
     _height: 128,
     _speed: 0.5,
-    _Y: leftPaddle.offsetTop + this._height/2,
+    _Y: [],
     get height() {
         return this._height;
     },
@@ -212,6 +216,7 @@ const leftPaddleData = {
     },
     set height(number) {
         this._height = number;
+        leftPaddle.style.height = number + "px";
     },
     set speed(number) {
         this._speed = number;
@@ -236,6 +241,7 @@ const rightPaddleData = {
     },
     set height(number) {
         this._height = number;
+        rightPaddle.style.height = number + "px";
     },
     set speed(number) {
         this._speed = number;
@@ -250,7 +256,8 @@ const rightPaddleData = {
 leftPaddleData.Y = leftPaddle.offsetTop + leftPaddleData.height/2;
 rightPaddleData.Y = rightPaddle.offsetTop + rightPaddleData.height/2;
 
-// input 0-100 to position the paddles
+// change the Y position of the paddles and save the data
+// input 0-100 to position the paddles relative to the top of the screen
 // returns: height from top to the center of the paddles
 
 function leftPaddleY(percent) {
@@ -291,6 +298,8 @@ let leftPaddleGoingUp = false;
 let leftPaddleGoingDown = false;
 let rightPaddleGoingUp = false;
 let rightPaddleGoingDown = false;
+
+// moves the paddles by setting an interval that increments the top position
 
 function moveLeftPaddleUp(event) {
     if (!leftPaddleGoingUp) {
@@ -358,6 +367,8 @@ function moveRightPaddleDown(event) {
     }
 }
 
+// clears the specific interval set by the move function whenever the key is released
+
 function stopPaddle(event) {
     let keyreleased = event.code;
     if (keyreleased == "KeyW") {
@@ -389,10 +400,12 @@ document.addEventListener("keypress", logPressedKey);
 
 */
 
+// moves ball around using numpad (for testing purposes)
+
 let ballCurrentY = 50;
 let ballCurrentX = 50;
 let noClipActive = false;
-let noClipSpeed = 0.25;
+let noClipSpeed = 0.5;
 
 function ballNoClip(event) {
     if (!noClipActive) {
@@ -461,6 +474,12 @@ document.addEventListener("keyup", stopBallNoClip);
 
 // collision detection
 
+let leftPaddleWall = 40; //pixels from wall to paddle collision wall
+let rightPaddleWall = gameBox.clientWidth - (ballData.radius*2) - 40;
+
+// checks whether the x and y coordinates of ball and paddles and game walls intersect
+// must be called whenever changing the position of the ball
+
 function detectCollision() {
     if (ballData.Y == gameBox.clientHeight - (ballData.radius*2)) {
         console.log("ball hits bottom");
@@ -474,15 +493,23 @@ function detectCollision() {
     if (ballData.X == gameBox.clientWidth - (ballData.radius*2)) {
         console.log("player one scores");
     }
+    if (ballData.X <= leftPaddleWall) {
+        if (leftPaddleData.Y - leftPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && leftPaddleData.Y + leftPaddleData.height/2 >= ballData.Y) {
+            console.log("leftPaddleWall");
+        }
+    }
+    if (ballData.X >= rightPaddleWall) {
+        if (rightPaddleData.Y - rightPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && rightPaddleData.Y + rightPaddleData.height/2 >= ballData.Y) {
+            console.log("rightPaddleWall");
+        }
+    }
 }
 
 
 
 
 
-/*
-ball.style.left = `${0}px`;
-*/
+
 
 console.log("center of screen:", gameBox.clientWidth/2, gameBox.clientHeight/2);
 console.log("ball X:",ballData.X,"ballY:", ballData.Y);
