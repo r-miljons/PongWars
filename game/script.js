@@ -377,33 +377,108 @@ document.addEventListener("keydown", moveLeftPaddleDown);
 document.addEventListener("keydown", moveRightPaddleUp);
 document.addEventListener("keydown", moveRightPaddleDown);
 
+// functions for testing purposes
+
+/*
+
+function logPressedKey(event) {
+    console.log(event.code);
+}
+
+document.addEventListener("keypress", logPressedKey);
+
+*/
+
+let ballCurrentY = 50;
+let ballCurrentX = 50;
+let noClipActive = false;
+let noClipSpeed = 0.25;
+
+function ballNoClip(event) {
+    if (!noClipActive) {
+        if (event.code == "Numpad8") {
+            noClipActive = true;
+            let move = setInterval(() => {
+                if (ballCurrentY > 0) {
+                    moveBall(ballCurrentX, ballCurrentY -= noClipSpeed);
+                    detectCollision();
+                }
+                if (!noClipActive) {
+                    clearInterval(move);
+                }
+            }, 1);
+        }
+        if (event.code == "Numpad2") {
+            noClipActive = true;
+            let move = setInterval(() => {
+                if (ballCurrentY < 100) {
+                    moveBall(ballCurrentX, ballCurrentY += noClipSpeed);
+                    detectCollision();
+                }
+                if (!noClipActive) {
+                    clearInterval(move);
+                }
+            }, 1);
+        }
+        if (event.code == "Numpad6") {
+            noClipActive = true;
+            let move = setInterval(() => {
+                if (ballCurrentX < 100) {
+                    moveBall(ballCurrentX += noClipSpeed, ballCurrentY);
+                    detectCollision();
+                }
+                if (!noClipActive) {
+                    clearInterval(move);
+                }
+            }, 1);
+        }
+        if (event.code == "Numpad4") {
+            noClipActive = true;
+            let move = setInterval(() => {
+                if (ballCurrentX > 0) {
+                    moveBall(ballCurrentX -= noClipSpeed, ballCurrentY);
+                    detectCollision();
+                }
+                if (!noClipActive) {
+                    clearInterval(move);
+                }
+            }, 1);
+        }
+    }
+}
+
+function stopBallNoClip(event) {
+    if (event.code == "Numpad8" || event.code == "Numpad6" || event.code == "Numpad2" || event.code == "Numpad4") {
+        noClipActive = false;
+    }
+}
+
+
+document.addEventListener("keydown", ballNoClip);
+document.addEventListener("keyup", stopBallNoClip);
+
 
 
 // collision detection
 
 function detectCollision() {
-    if (0) {
-        console.log("looking for left paddle");
-    }
-    if (0) {
-        console.log("looking for right paddle");
-    }
-    if (ballData.Y >= gameBox.clientHeight - (ballData.radius*2)) {
+    if (ballData.Y == gameBox.clientHeight - (ballData.radius*2)) {
         console.log("ball hits bottom");
     }
-    if (ballData.Y <= 0) {
+    if (ballData.Y == 0) {
         console.log("ball hits top");
     }
-    if (ballData.X <= 0) {
+    if (ballData.X == 0) {
         console.log("player two scores");
     }
-    if (ballData.X >= gameBox.clientWidth - (ballData.radius*2)) {
+    if (ballData.X == gameBox.clientWidth - (ballData.radius*2)) {
         console.log("player one scores");
     }
 }
 
 
-detectCollision();
+
+
 
 /*
 ball.style.left = `${0}px`;
