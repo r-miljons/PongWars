@@ -195,8 +195,7 @@ function moveBall(X, Y) {
 
 // paddle movement
 
-let leftPaddleActive = false;
-let rightPaddleActive = false;
+
 
 const leftPaddleData = {
     _height: 128,
@@ -288,67 +287,95 @@ function rightPaddleY(percent) {
 
 let leftPaddleCurrentY = 50;
 let rightPaddleCurrentY = 50;
+let leftPaddleGoingUp = false;
+let leftPaddleGoingDown = false;
+let rightPaddleGoingUp = false;
+let rightPaddleGoingDown = false;
 
-function moveLeftPaddle(event) {
-    leftPaddleActive = true;
-    let keypressed = event.code;
-    if (keypressed == "KeyW") {
-        let move = setInterval(()=>{
-            if (leftPaddleCurrentY > 0) {
-                leftPaddleY(leftPaddleCurrentY -= leftPaddleData.speed);
-            }
-            if (leftPaddleActive == false) {
-                clearInterval(move);
-            }
-        }, 1)
-    } else if (keypressed == "KeyS") {
-        let move = setInterval(()=>{
-            if (leftPaddleCurrentY < 100) {
-                leftPaddleY(leftPaddleCurrentY += leftPaddleData.speed);
-            }
-            if (leftPaddleActive == false) {
-                clearInterval(move);
-            }
-        }, 1)
+function moveLeftPaddleUp(event) {
+    if (!leftPaddleGoingUp) {
+        if (event.code == "KeyW") {
+            leftPaddleGoingUp = true;
+            let move = setInterval(()=>{
+                if (leftPaddleCurrentY > 0) {
+                    leftPaddleY(leftPaddleCurrentY -= leftPaddleData.speed);
+                }
+                if (!leftPaddleGoingUp) {
+                    clearInterval(move);
+                }
+            }, 1)
+        }
+    }
+
+}
+
+function moveLeftPaddleDown(event) {
+    if (!leftPaddleGoingDown) {
+        if (event.code == "KeyS") {
+            leftPaddleGoingDown = true;
+            let move = setInterval(()=>{
+                if (leftPaddleCurrentY < 100) {
+                    leftPaddleY(leftPaddleCurrentY += leftPaddleData.speed);
+                }
+                if (!leftPaddleGoingDown) {
+                    clearInterval(move);
+                }
+            }, 1)
+        }
+    }
+
+}
+
+function moveRightPaddleUp(event) {
+    if (!rightPaddleGoingUp) {
+        if (event.code == "ArrowUp") {
+            rightPaddleGoingUp = true;
+            let move = setInterval(()=>{
+                if (rightPaddleCurrentY > 0) {
+                    rightPaddleY(rightPaddleCurrentY -= rightPaddleData.speed);
+                }
+                if (!rightPaddleGoingUp) {
+                    clearInterval(move);
+                }
+            }, 1)
+        }
     }
 }
 
-function moveRightPaddle(event) {
-    rightPaddleActive = true;
-    let keypressed = event.code;
-    if (keypressed == "ArrowUp") {
-        let move = setInterval(()=>{
-            if (rightPaddleCurrentY > 0) {
-                rightPaddleY(rightPaddleCurrentY -= rightPaddleData.speed);
-            }
-            if (rightPaddleActive == false) {
-                clearInterval(move);
-            }
-        }, 1)
-    } else if (keypressed == "ArrowDown") {
-        let move = setInterval(()=>{
-            if (rightPaddleCurrentY < 100) {
-                rightPaddleY(rightPaddleCurrentY += rightPaddleData.speed);
-            }
-            if (rightPaddleActive == false) {
-                clearInterval(move);
-            }
-        }, 1)
+function moveRightPaddleDown(event) {
+    if (!rightPaddleGoingDown) {
+        if (event.code == "ArrowDown") {
+            rightPaddleGoingDown = true;
+            let move = setInterval(()=>{
+                if (rightPaddleCurrentY < 100) {
+                    rightPaddleY(rightPaddleCurrentY += rightPaddleData.speed);
+                }
+                if (!rightPaddleGoingDown) {
+                    clearInterval(move);
+                }
+            }, 1)
+        }
     }
 }
 
 function stopPaddle(event) {
     let keyreleased = event.code;
-    if (keyreleased == "KeyW" || keyreleased == "KeyS") {
-        leftPaddleActive = false;
-    } else if (keyreleased == "ArrowUp" || keyreleased == "ArrowDown") {
-        rightPaddleActive = false;
+    if (keyreleased == "KeyW") {
+        leftPaddleGoingUp = false;
+    } else if (keyreleased == "KeyS") {
+        leftPaddleGoingDown = false;
+    } else if (keyreleased == "ArrowUp") {
+        rightPaddleGoingUp = false;
+    } else if (keyreleased == "ArrowDown") {
+        rightPaddleGoingDown = false;
     }
 }
 
 document.addEventListener("keyup", stopPaddle);
-document.addEventListener("keydown", moveLeftPaddle);
-document.addEventListener("keydown", moveRightPaddle);
+document.addEventListener("keydown", moveLeftPaddleUp);
+document.addEventListener("keydown", moveLeftPaddleDown);
+document.addEventListener("keydown", moveRightPaddleUp);
+document.addEventListener("keydown", moveRightPaddleDown);
 
 
 
