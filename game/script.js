@@ -405,7 +405,7 @@ document.addEventListener("keypress", logPressedKey);
 let ballCurrentY = 50;
 let ballCurrentX = 50;
 let noClipActive = false;
-let noClipSpeed = 0.5;
+let noClipSpeed = 0.1;
 
 function ballNoClip(event) {
     if (!noClipActive) {
@@ -474,8 +474,8 @@ document.addEventListener("keyup", stopBallNoClip);
 
 // collision detection
 
-let leftPaddleWall = 40; //pixels from wall to paddle collision wall
-let rightPaddleWall = gameBox.clientWidth - (ballData.radius*2) - 40;
+const leftPaddleWall = 40; //pixels from wall to paddle collision wall
+const rightPaddleWall = gameBox.clientWidth - (ballData.radius*2) - 40;
 
 // checks whether the x and y coordinates of ball and paddles and game walls intersect
 // must be called whenever changing the position of the ball
@@ -494,12 +494,42 @@ function detectCollision() {
         console.log("player one scores");
     }
     if (ballData.X <= leftPaddleWall) {
+        // check wether the ball is touching the left paddle
         if (leftPaddleData.Y - leftPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && leftPaddleData.Y + leftPaddleData.height/2 >= ballData.Y) {
+            const topOfPaddle = leftPaddleData.Y - ballData.radius - (leftPaddleData.height/2);
+            const bottomOfPaddle = leftPaddleData.Y + ballData.radius + (leftPaddleData.height/2);
+            const centerOfBall = ballData.Y + ballData.radius;
+            // if the ball hits the top part of the paddle, calculate the percentage of distance from center of paddle that the ball hits
+            if (centerOfBall >= topOfPaddle && centerOfBall <= leftPaddleData.Y) {
+                let percentFromCenter = ((centerOfBall - topOfPaddle) / ((leftPaddleData.height/2) + ballData.radius)) * 100;
+                percentFromCenter = 100 - percentFromCenter;
+                console.log("From center: "+percentFromCenter+"%");
+            }
+            // same for the bottom part of the padddle
+            if (centerOfBall <= bottomOfPaddle && centerOfBall > leftPaddleData.Y) {
+                let percentFromCenter = ((centerOfBall - leftPaddleData.Y) / ((leftPaddleData.height/2) + ballData.radius)) * 100;
+                console.log("From center: "+percentFromCenter+"%");
+            }
             console.log("leftPaddleWall");
-        }
+        }   
     }
     if (ballData.X >= rightPaddleWall) {
+        // same for the right paddle
         if (rightPaddleData.Y - rightPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && rightPaddleData.Y + rightPaddleData.height/2 >= ballData.Y) {
+            const topOfPaddle = rightPaddleData.Y - ballData.radius - (rightPaddleData.height/2);
+            const bottomOfPaddle = rightPaddleData.Y + ballData.radius + (rightPaddleData.height/2);
+            const centerOfBall = ballData.Y + ballData.radius;
+            // if the ball hits the top part of the paddle, calculate the percentage of distance from center of paddle that the ball hits
+            if (centerOfBall >= topOfPaddle && centerOfBall <= rightPaddleData.Y) {
+                let percentFromCenter = ((centerOfBall - topOfPaddle) / ((rightPaddleData.height/2) + ballData.radius)) * 100;
+                percentFromCenter = 100 - percentFromCenter;
+                console.log("From center: "+percentFromCenter+"%");
+            }
+            // same for the bottom part of the padddle
+            if (centerOfBall <= bottomOfPaddle && centerOfBall > rightPaddleData.Y) {
+                let percentFromCenter = ((centerOfBall - rightPaddleData.Y) / ((rightPaddleData.height/2) + ballData.radius)) * 100;
+                console.log("From center: "+percentFromCenter+"%");
+            }
             console.log("rightPaddleWall");
         }
     }
