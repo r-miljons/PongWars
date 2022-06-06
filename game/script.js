@@ -117,7 +117,9 @@ nextRight.addEventListener("click", function () {
     updateRightPaddleColor();
 });
 
-// ball movement, paddle movement collision detection ----------------------------------------------------------------
+// game section ----------------------------------------------------------------
+
+// elements
 
 const gameBox = document.querySelector(".game");
 const ball = document.querySelector(".ball");
@@ -125,14 +127,14 @@ const trail = document.querySelector(".ball-trail");
 const leftPaddle = document.querySelector(".left-paddle");
 const rightPaddle = document.querySelector(".right-paddle");
 
-// ball movement -------------------------------
+// data objects and variables
 
 const ballData = {
     _radius: 12,
     _X: gameBox.clientWidth/2,
     _Y: gameBox.clientHeight/2,
-    _speed: 0.25, // currently only 0.25++ works properly 
-    _direction: 0, // degrees from top of y axis (from 0 to 360)
+    _speed: 0.25, 
+    _direction: 0, 
     get radius() {
         return this._radius;
     },
@@ -164,180 +166,6 @@ const ballData = {
         this._direction = degrees;
     }
 }
-
-// function for positioning the ball
-// use moveBall(X, Y) input values from 0 to 100 relative to the top left corner
-
-function moveBall(percentX, percentY) {
-    let X;
-    if (percentX > -1 && percentX <= 101) {
-        X = (percentX/100) * (gameBox.clientWidth - (ballData.radius*2));
-        ballData.X = X;
-        ball.style.left = X + "px";
-        trail.style.left = X + "px";
-    }
-    let Y;
-    if (percentY > -1 && percentY <= 101) {
-        Y = (percentY/100) * (gameBox.clientHeight -(ballData.radius*2))
-        ballData.Y = Y;
-        ball.style.top =  Y + "px";
-        trail.style.top = Y + "px";
-    }  
-}
-
-
-// values to feed the moveBall function (starting point set to center of screen)
-let ballCurrentY = 50;
-let ballCurrentX = 50;
-
-function updateBallVector(degrees = ballData.direction, speed = ballData.speed) {
-    ballData.speed = speed;
-    ballData.direction = degrees;
-    // calculate x y from movement direction
-    // handle each right angle case separately
-    switch (degrees) {
-        case 0 : {
-            let move = setInterval(() => {
-                    moveBall(ballCurrentX, ballCurrentY -= ballData.speed);
-                if (ballCurrentY <= 0) {
-                    detectCollision();
-                    clearInterval(move);
-                    updateBallVector();
-                }
-            }, 1);
-        }; break;
-        case 90 : {
-            let move = setInterval(() => {
-                    moveBall(ballCurrentX += ballData.speed, ballCurrentY);
-                if (ballCurrentX >= 100) {
-                    detectCollision();
-                    clearInterval(move);
-                    updateBallVector();
-                }
-            }, 1);
-        }; break;
-        case 180 : {
-            let move = setInterval(() => {
-                    moveBall(ballCurrentX, ballCurrentY += ballData.speed);
-                if (ballCurrentY >= 100) {
-                    detectCollision();
-                    clearInterval(move);
-                    updateBallVector();
-                }
-            }, 1);
-        }; break;
-        case 270 : {
-            let move = setInterval(() => {
-                    moveBall(ballCurrentX -= ballData.speed, ballCurrentY);
-                if (ballCurrentX <= 0) {
-                    detectCollision();
-                    clearInterval(move);
-                    updateBallVector();
-                }
-            }, 1);
-        }; break;
-        case 360 : {
-            let move = setInterval(() => {
-                    moveBall(ballCurrentX, ballCurrentY -= ballData.speed);
-                if (ballCurrentY <= 0) {
-                    detectCollision();
-                    clearInterval(move);
-                    updateBallVector();
-                }
-            }, 1);
-        }; break;
-    }
-    // non-right angles
-    if (degrees > 0 && degrees < 90) {
-        let radians = degrees * (Math.PI / 180);
-        let x = ballData.speed * Math.sin(radians);
-        let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
-        let move = setInterval(() => {
-            moveBall(ballCurrentX += x, ballCurrentY -= y);
-            
-            if (ballCurrentY <= 0 || ballCurrentX >= 100) {
-                detectCollision();
-                clearInterval(move);
-                updateBallVector();
-            }
-        }, 1);
-    }
-    if (degrees > 270 && degrees < 360) {
-        let radians = degrees * (Math.PI / 180);
-        let x = ballData.speed * Math.sin(radians);
-        let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
-        let move = setInterval(() => {
-            moveBall(ballCurrentX += x, ballCurrentY -= y);
-            
-            if (ballCurrentY <= 0 || ballCurrentX <= 0) {
-                clearInterval(move);
-                detectCollision();
-                updateBallVector();
-            }
-        }, 1);
-    }
-    if (degrees > 90 && degrees < 180) {
-        let radians = degrees * (Math.PI / 180);
-        let x = ballData.speed * Math.sin(radians);
-        let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
-        let move = setInterval(() => {
-            moveBall(ballCurrentX += x, ballCurrentY += y);
-            
-            if (ballCurrentY >= 100 || ballCurrentX >= 100) {
-                clearInterval(move);
-                detectCollision();
-                updateBallVector();
-            }
-        }, 1);
-    }
-    if (degrees > 180 && degrees < 270) {
-        let radians = degrees * (Math.PI / 180);
-        let x = ballData.speed * Math.sin(radians);
-        let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
-        let move = setInterval(() => {
-            moveBall(ballCurrentX += x, ballCurrentY += y);
-            if (ballCurrentY >= 100 || ballCurrentX <= 0) {
-                clearInterval(move);
-                detectCollision();
-                updateBallVector();
-            }
-        }, 1);
-    }
-
-}
-
-//depending on the current movement direction, this function calculates the new direction of the ball
-// takes in degrees and returns updated degrees for the updateBallVector function
-
-
-function recalculateDirection(degrees = ballData.direction) {
-    wallDetected = false;
-        if (ballCurrentX >= 100) {
-                ballData.direction = 360 - degrees;
-        }
-        if (ballCurrentY <= 0) {
-            if (degrees >= 180) {
-                ballData.direction = 360 - (degrees - 180);
-            } else if (degrees < 180) {
-                ballData.direction = 360 - degrees - 180;
-            }
-        }
-        if (ballCurrentX <= 0) {
-            ballData.direction = 360 - degrees;
-        }
-        if (ballCurrentY >= 100) {
-            if (degrees >= 180) {
-                    ballData.direction = 360 - (degrees - 180);
-            } else if (degrees < 180) {
-                ballData.direction = 360 - degrees - 180;
-            }
-        }
-}
-
-
-// paddle movement --------------------------------
-
-// data about the paddles
 
 const leftPaddleData = {
     _height: 128,
@@ -375,6 +203,7 @@ const rightPaddleData = {
         return this._speed;
     },
     get Y() {
+
         return this._Y;
     },
     set height(number) {
@@ -393,6 +222,304 @@ const rightPaddleData = {
 
 leftPaddleData.Y = leftPaddle.offsetTop + leftPaddleData.height/2;
 rightPaddleData.Y = rightPaddle.offsetTop + rightPaddleData.height/2;
+
+let ballCurrentY = 50;
+let ballCurrentX = 50;
+
+const leftPaddleWall = 40; //pixels from wall to paddle collision wall
+const rightPaddleWall = gameBox.clientWidth - (ballData.radius*2) - 40;
+
+let wallDetected = false;
+
+// these tell the recalculateDirection function which side of the ball got hit
+let leftSide = false;
+let rightSide = false;
+let topSide = false;
+let bottomSide = false;
+
+let leftPaddleCurrentY = 50;
+let rightPaddleCurrentY = 50;
+let leftPaddleGoingUp = false;
+let leftPaddleGoingDown = false;
+let rightPaddleGoingUp = false;
+let rightPaddleGoingDown = false;
+
+// ball movement -------------------------------
+
+
+
+// function for positioning the ball
+// use moveBall(X, Y) input values from 0 to 100 relative to the top left corner
+
+function moveBall(percentX, percentY) {
+    let X;
+        X = (percentX/100) * (gameBox.clientWidth - (ballData.radius*2));
+        ballData.X = X;
+        ball.style.left = X + "px";
+        trail.style.left = X + "px";
+    let Y;
+        Y = (percentY/100) * (gameBox.clientHeight -(ballData.radius*2))
+        ballData.Y = Y;
+        ball.style.top =  Y + "px";
+        trail.style.top = Y + "px"; 
+}
+
+
+
+
+
+
+function updateBallVector(degrees = ballData.direction, speed = ballData.speed) {
+    ballData.speed = speed;
+    ballData.direction = degrees;
+    switch (degrees) {
+        case 0 : {
+            let move = setInterval(() => {
+                    moveBall(ballCurrentX, ballCurrentY -= ballData.speed);
+                    detectCollision();
+                if (wallDetected) {
+                    clearInterval(move);
+                    wallDetected = false;
+                    recalculateDirection()
+                    updateBallVector();
+                }
+            }, 1);
+        }; break;
+        case 90 : {
+            let move = setInterval(() => {
+                    moveBall(ballCurrentX += ballData.speed, ballCurrentY);
+                    detectCollision();
+                if (wallDetected) {
+                    clearInterval(move);
+                    wallDetected = false;
+                    recalculateDirection()
+                    updateBallVector();
+                }
+            }, 1);
+        }; break;
+        case 180 : {
+            let move = setInterval(() => {
+                    moveBall(ballCurrentX, ballCurrentY += ballData.speed);
+                    detectCollision();
+                if (wallDetected) {
+                    clearInterval(move);
+                    wallDetected = false;
+                    recalculateDirection()
+                    updateBallVector();
+                }
+            }, 1);
+        }; break;
+        case 270 : {
+            let move = setInterval(() => {
+                    moveBall(ballCurrentX -= ballData.speed, ballCurrentY);
+                    detectCollision();
+                if (wallDetected) {
+                    clearInterval(move);
+                    wallDetected = false;
+                    recalculateDirection()
+                    updateBallVector();
+                }
+            }, 1);
+        }; break;
+        case 360 : {
+            let move = setInterval(() => {
+                    moveBall(ballCurrentX, ballCurrentY -= ballData.speed);
+                    detectCollision();
+                if (wallDetected) {
+                    clearInterval(move);
+                    wallDetected = false;
+                    recalculateDirection()
+                    updateBallVector();
+                }
+            }, 1);
+        }; break;
+    }
+    // non-right angles
+    if (degrees > 0 && degrees < 90) {
+        let radians = degrees * (Math.PI / 180);
+        let x = ballData.speed * Math.sin(radians);
+        let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
+        let move = setInterval(() => {
+            moveBall(ballCurrentX += x, ballCurrentY -= y);
+            detectCollision();
+            if (wallDetected) {
+                clearInterval(move);
+                wallDetected = false;
+                recalculateDirection()
+                updateBallVector();
+            }
+        }, 1);
+    }
+    if (degrees > 270 && degrees < 360) {
+        let radians = degrees * (Math.PI / 180);
+        let x = ballData.speed * Math.sin(radians);
+        let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
+        let move = setInterval(() => {
+            moveBall(ballCurrentX += x, ballCurrentY -= y);
+            detectCollision();
+            if (wallDetected) {
+                clearInterval(move);
+                wallDetected = false;
+                recalculateDirection()
+                updateBallVector();
+            }
+        }, 1);
+    }
+    if (degrees > 90 && degrees < 180) {
+        let radians = degrees * (Math.PI / 180);
+        let x = ballData.speed * Math.sin(radians);
+        let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
+        let move = setInterval(() => {
+            moveBall(ballCurrentX += x, ballCurrentY += y);
+            detectCollision();
+            if (wallDetected) {
+                clearInterval(move);
+                wallDetected = false;
+                recalculateDirection()
+                updateBallVector();
+            }
+        }, 1);
+    }
+    if (degrees > 180 && degrees < 270) {
+        let radians = degrees * (Math.PI / 180);
+        let x = ballData.speed * Math.sin(radians);
+        let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
+        let move = setInterval(() => {
+            moveBall(ballCurrentX += x, ballCurrentY += y);
+            detectCollision();
+            if (wallDetected) {
+                clearInterval(move);
+                wallDetected = false;
+                recalculateDirection()
+                updateBallVector();
+            }
+        }, 1);
+    }
+
+}
+
+// collision detection
+
+// checks whether the x and y coordinates of ball and paddles and game walls intersect
+// must be called whenever changing the position of the ball
+
+
+
+
+
+function detectCollision() {
+    
+        if (ballData.Y >= gameBox.clientHeight - (ballData.radius*2)) {
+            wallDetected = true;
+            bottomSide = true;
+            console.log("ball hits bottom");
+        }
+        if (ballData.Y <= 0) {
+            wallDetected = true;
+            topSide = true;
+            console.log("ball hits top");
+            
+        }
+        if (ballData.X <= 0) {
+            wallDetected = true;
+            leftSide = true;
+            console.log("player two scores");
+        }
+        if (ballData.X >= gameBox.clientWidth - (ballData.radius*2)) {
+            wallDetected = true;
+            rightSide = true;
+            console.log("player one scores");
+        }
+        
+        if (ballData.X <= leftPaddleWall) {
+            // check wether the ball is touching the left paddle
+            if (leftPaddleData.Y - leftPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && leftPaddleData.Y + leftPaddleData.height/2 >= ballData.Y) {
+                wallDetected = true;
+                const topOfPaddle = leftPaddleData.Y - ballData.radius - (leftPaddleData.height/2);
+                const bottomOfPaddle = leftPaddleData.Y + ballData.radius + (leftPaddleData.height/2);
+                const centerOfBall = ballData.Y + ballData.radius;
+                // if the ball hits the top part of the paddle, calculate the percentage of distance from center of paddle that the ball hits
+                if (centerOfBall >= topOfPaddle && centerOfBall <= leftPaddleData.Y) {
+                    let percentFromCenter = ((centerOfBall - topOfPaddle) / ((leftPaddleData.height/2) + ballData.radius)) * 100;
+                    percentFromCenter = 100 - percentFromCenter;
+                    console.log("From center: "+percentFromCenter+"%");
+                    ballData.direction = 90 - ((percentFromCenter/100) * 65);
+                }
+                // same for the bottom part of the padddle
+                if (centerOfBall <= bottomOfPaddle && centerOfBall > leftPaddleData.Y) {
+                    let percentFromCenter = ((centerOfBall - leftPaddleData.Y) / ((leftPaddleData.height/2) + ballData.radius)) * 100;
+                    console.log("From center: "+percentFromCenter+"%");
+                    ballData.direction = 90 + ((percentFromCenter/100) * 65);
+                }
+            }   
+        }
+        
+        if (ballData.X >= rightPaddleWall) {
+            // same for the right paddle
+            if (rightPaddleData.Y - rightPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && rightPaddleData.Y + rightPaddleData.height/2 >= ballData.Y) {
+                wallDetected = true;
+
+                const topOfPaddle = rightPaddleData.Y - ballData.radius - (rightPaddleData.height/2);
+                const bottomOfPaddle = rightPaddleData.Y + ballData.radius + (rightPaddleData.height/2);
+                const centerOfBall = ballData.Y + ballData.radius;
+                // if the ball hits the top part of the paddle, calculate the percentage of distance from center of paddle that the ball hits
+                if (centerOfBall >= topOfPaddle && centerOfBall <= rightPaddleData.Y) {
+                    let percentFromCenter = ((centerOfBall - topOfPaddle) / ((rightPaddleData.height/2) + ballData.radius)) * 100;
+                    percentFromCenter = 100 - percentFromCenter;
+                    console.log("From center: "+percentFromCenter+"%");
+                    ballData.direction = 270 + ((percentFromCenter/100) * 65);
+                }
+                // same for the bottom part of the padddle
+                if (centerOfBall <= bottomOfPaddle && centerOfBall > rightPaddleData.Y) {
+                    let percentFromCenter = ((centerOfBall - rightPaddleData.Y) / ((rightPaddleData.height/2) + ballData.radius)) * 100;
+                    console.log("From center: "+percentFromCenter+"%");
+                    ballData.direction = 270 - ((percentFromCenter/100) * 65);
+                }
+            }
+        }
+
+        
+}
+
+
+//depending on which side the ball hit, this function calculates the new direction of the ball
+
+
+function recalculateDirection(degrees = ballData.direction) { 
+        if (rightSide) {
+                ballData.direction = 360 - degrees;
+                rightSide = false;
+        }
+        if (topSide) {
+            if (degrees >= 180) {
+                ballData.direction = 360 - (degrees - 180);
+                topSide = false;
+            } else if (degrees < 180) {
+                ballData.direction = 360 - degrees - 180;
+                topSide = false;
+            }
+        }
+        if (leftSide) {
+            ballData.direction = 360 - degrees;
+            leftSide = false;
+        }
+        if (bottomSide) {
+            if (degrees >= 180) {
+                ballData.direction = 360 - (degrees - 180);
+                bottomSide = false;
+            } else if (degrees < 180) {
+                ballData.direction = 360 - degrees - 180;
+                bottomSide = false;
+            }
+        }
+}
+
+
+// paddle movement --------------------------------
+
+// data about the paddles
+
+
 
 // change the Y position of the paddles and save the data
 // input 0-100 to position the paddles relative to the top of the screen
@@ -430,12 +557,7 @@ function rightPaddleY(percent) {
 
 // move the paddles using "w" and "s" or "↑" and "↓"
 
-let leftPaddleCurrentY = 50;
-let rightPaddleCurrentY = 50;
-let leftPaddleGoingUp = false;
-let leftPaddleGoingDown = false;
-let rightPaddleGoingUp = false;
-let rightPaddleGoingDown = false;
+
 
 // moves the paddles by setting an interval that increments the top position
 
@@ -526,79 +648,6 @@ document.addEventListener("keydown", moveLeftPaddleDown);
 document.addEventListener("keydown", moveRightPaddleUp);
 document.addEventListener("keydown", moveRightPaddleDown);
 
-// collision detection
-
-const leftPaddleWall = 40; //pixels from wall to paddle collision wall
-const rightPaddleWall = gameBox.clientWidth - (ballData.radius*2) - 40;
-
-// checks whether the x and y coordinates of ball and paddles and game walls intersect
-// must be called whenever changing the position of the ball
-
-let wallDetected = false;
-
-
-
-function detectCollision() {
-    if (!wallDetected) {
-        wallDetected = true;
-        if (ballData.Y >= gameBox.clientHeight - (ballData.radius*2)) {
-            console.log("ball hits bottom");
-            recalculateDirection();
-        }
-        if (ballData.Y <= 0) {
-            console.log("ball hits top");
-            recalculateDirection();
-        }
-        if (ballData.X <= 0) {
-            console.log("player two scores");
-            recalculateDirection();
-        }
-        if (ballData.X >= gameBox.clientWidth - (ballData.radius*2)) {
-            console.log("player one scores");
-            recalculateDirection();
-        }
-        if (ballData.X <= leftPaddleWall) {
-            // check wether the ball is touching the left paddle
-            if (leftPaddleData.Y - leftPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && leftPaddleData.Y + leftPaddleData.height/2 >= ballData.Y) {
-                const topOfPaddle = leftPaddleData.Y - ballData.radius - (leftPaddleData.height/2);
-                const bottomOfPaddle = leftPaddleData.Y + ballData.radius + (leftPaddleData.height/2);
-                const centerOfBall = ballData.Y + ballData.radius;
-                // if the ball hits the top part of the paddle, calculate the percentage of distance from center of paddle that the ball hits
-                if (centerOfBall >= topOfPaddle && centerOfBall <= leftPaddleData.Y) {
-                    let percentFromCenter = ((centerOfBall - topOfPaddle) / ((leftPaddleData.height/2) + ballData.radius)) * 100;
-                    percentFromCenter = 100 - percentFromCenter;
-                    console.log("From center: "+percentFromCenter+"%");
-                }
-                // same for the bottom part of the padddle
-                if (centerOfBall <= bottomOfPaddle && centerOfBall > leftPaddleData.Y) {
-                    let percentFromCenter = ((centerOfBall - leftPaddleData.Y) / ((leftPaddleData.height/2) + ballData.radius)) * 100;
-                    console.log("From center: "+percentFromCenter+"%");
-                }
-                console.log("leftPaddleWall");
-            }   
-        }
-        if (ballData.X >= rightPaddleWall) {
-            // same for the right paddle
-            if (rightPaddleData.Y - rightPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && rightPaddleData.Y + rightPaddleData.height/2 >= ballData.Y) {
-                const topOfPaddle = rightPaddleData.Y - ballData.radius - (rightPaddleData.height/2);
-                const bottomOfPaddle = rightPaddleData.Y + ballData.radius + (rightPaddleData.height/2);
-                const centerOfBall = ballData.Y + ballData.radius;
-                // if the ball hits the top part of the paddle, calculate the percentage of distance from center of paddle that the ball hits
-                if (centerOfBall >= topOfPaddle && centerOfBall <= rightPaddleData.Y) {
-                    let percentFromCenter = ((centerOfBall - topOfPaddle) / ((rightPaddleData.height/2) + ballData.radius)) * 100;
-                    percentFromCenter = 100 - percentFromCenter;
-                    console.log("From center: "+percentFromCenter+"%");
-                }
-                // same for the bottom part of the padddle
-                if (centerOfBall <= bottomOfPaddle && centerOfBall > rightPaddleData.Y) {
-                    let percentFromCenter = ((centerOfBall - rightPaddleData.Y) / ((rightPaddleData.height/2) + ballData.radius)) * 100;
-                    console.log("From center: "+percentFromCenter+"%");
-                }
-                console.log("rightPaddleWall");
-            }
-        }
-    }
-}
 
 
 
