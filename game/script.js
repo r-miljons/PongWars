@@ -18,6 +18,9 @@ function pullMenuUpSpacebar (event) {
     if (keypressed == "Space") {
         pullMenuUp();
         document.removeEventListener("keypress", pullMenuUpSpacebar);
+        setTimeout(() => {
+            document.addEventListener("keydown", startGame);
+        }, 1000);
     }
 }
 
@@ -129,11 +132,35 @@ const rightPaddle = document.querySelector(".right-paddle");
 
 // data objects and variables
 
+const playerOne = {
+    score: 0,
+    updateScore() {
+        this.score += 1;
+        document.querySelector(".player-one-score").textContent = this.score;
+    },
+    resetScore() {
+        this.score = 0;
+        document.querySelector(".player-one-score").textContent = this.score;
+    }
+}
+
+playerTwo = {
+    score: 0,
+    updateScore() {
+        this.score += 1;
+        document.querySelector(".player-two-score").textContent = this.score;
+    },
+    resetScore() {
+        this.score = 0;
+        document.querySelector(".player-two-score").textContent = this.score;
+    }
+}
+
 const ballData = {
     _radius: 12,
     _X: gameBox.clientWidth/2,
     _Y: gameBox.clientHeight/2,
-    _speed: 0.25, 
+    _speed: 0.4, 
     _direction: 0, 
     get radius() {
         return this._radius;
@@ -169,7 +196,7 @@ const ballData = {
 
 const leftPaddleData = {
     _height: 128,
-    _speed: 0.5,
+    _speed: 0.8,
     _Y: [],
     get height() {
         return this._height;
@@ -194,7 +221,7 @@ const leftPaddleData = {
 
 const rightPaddleData = {
     _height: 128,
-    _speed: 0.5,
+    _speed: 0.8,
     _Y: [],
     get height() {
         return this._height;
@@ -217,6 +244,9 @@ const rightPaddleData = {
         this._Y = number;
     }
 }
+
+let gameStarted = false;
+let playerScored = false;
 
 // setting initial Y position for paddles
 
@@ -244,8 +274,66 @@ let leftPaddleGoingDown = false;
 let rightPaddleGoingUp = false;
 let rightPaddleGoingDown = false;
 
-// ball movement -------------------------------
 
+// pressing spacebar starts the game by throwing the ball in a random players direction
+function startGame(event) {
+    if (!gameStarted) {
+        if (event.code == "Space") {
+            gameStarted = true;
+            playerOne.resetScore();
+            playerTwo.resetScore();
+            let randomBallAngle;
+            let randomPlayer = 1 + Math.floor(Math.random()*2);
+            if (randomPlayer == 1) {
+                randomBallAngle = 205 + Math.floor(Math.random()*131);
+            } else if (randomPlayer == 2) {
+                randomBallAngle = 25 + Math.floor(Math.random()*131);
+            }
+            updateBallVector(randomBallAngle); 
+        }
+    }
+}
+
+// 
+
+function restartGame() {
+    playerScored = false;
+    ballData.X = gameBox.clientWidth/2;
+    ballData.Y = gameBox.clientHeight/2;
+    ballCurrentX = 50;
+    ballCurrentY = 50;
+    ball.style.left = (ballData.X - ballData.radius) + "px";
+    trail.style.left = (ballData.X - ballData.radius) + "px";
+    ball.style.top =  (ballData.Y - ballData.radius) + "px";
+    trail.style.top = (ballData.Y - ballData.radius) + "px";
+    rightSide = false;
+    leftSide = false; 
+
+    if (playerOne.score == 5 || playerTwo.score == 5) {
+        gameStarted = false;
+    } else {
+        setTimeout(() => {
+            if (playerOne.score > playerTwo.score) {
+                updateBallVector(205 + Math.floor(Math.random()*131));
+            } else if (playerOne.score < playerTwo.score) {
+                updateBallVector(25 + Math.floor(Math.random()*131));
+            } else if (playerOne.score == playerTwo.score) {
+                let randomBallAngle;
+                let randomPlayer = 1 + Math.floor(Math.random()*2);
+                if (randomPlayer == 1) {
+                    randomBallAngle = 205 + Math.floor(Math.random()*131);
+                } else if (randomPlayer == 2) {
+                    randomBallAngle = 25 + Math.floor(Math.random()*131);
+                }
+                updateBallVector(randomBallAngle); 
+            }
+        }, 500);
+    }
+}
+
+
+
+// ball movement -------------------------------
 
 
 // function for positioning the ball
@@ -264,8 +352,7 @@ function moveBall(percentX, percentY) {
         trail.style.top = Y + "px"; 
 }
 
-
-
+ 
 
 
 
@@ -280,8 +367,12 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
                 if (wallDetected) {
                     clearInterval(move);
                     wallDetected = false;
-                    recalculateDirection()
-                    updateBallVector();
+                    if (!playerScored) {
+                        recalculateDirection()
+                        updateBallVector();
+                    } else {
+                        restartGame();
+                    }
                 }
             }, 1);
         }; break;
@@ -292,8 +383,12 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
                 if (wallDetected) {
                     clearInterval(move);
                     wallDetected = false;
-                    recalculateDirection()
-                    updateBallVector();
+                    if (!playerScored) {
+                        recalculateDirection()
+                        updateBallVector();
+                    } else {
+                        restartGame();
+                    }
                 }
             }, 1);
         }; break;
@@ -304,8 +399,12 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
                 if (wallDetected) {
                     clearInterval(move);
                     wallDetected = false;
-                    recalculateDirection()
-                    updateBallVector();
+                    if (!playerScored) {
+                        recalculateDirection()
+                        updateBallVector();
+                    } else {
+                        restartGame();
+                    }
                 }
             }, 1);
         }; break;
@@ -316,8 +415,12 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
                 if (wallDetected) {
                     clearInterval(move);
                     wallDetected = false;
-                    recalculateDirection()
-                    updateBallVector();
+                    if (!playerScored) {
+                        recalculateDirection()
+                        updateBallVector();
+                    } else {
+                        restartGame();
+                    }
                 }
             }, 1);
         }; break;
@@ -328,8 +431,12 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
                 if (wallDetected) {
                     clearInterval(move);
                     wallDetected = false;
-                    recalculateDirection()
-                    updateBallVector();
+                    if (!playerScored) {
+                        recalculateDirection()
+                        updateBallVector();
+                    } else {
+                        restartGame();
+                    }
                 }
             }, 1);
         }; break;
@@ -345,8 +452,12 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
             if (wallDetected) {
                 clearInterval(move);
                 wallDetected = false;
-                recalculateDirection()
-                updateBallVector();
+                if (!playerScored) {
+                    recalculateDirection()
+                    updateBallVector();
+                } else {
+                    restartGame();
+                }
             }
         }, 1);
     }
@@ -360,8 +471,12 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
             if (wallDetected) {
                 clearInterval(move);
                 wallDetected = false;
-                recalculateDirection()
-                updateBallVector();
+                if (!playerScored) {
+                    recalculateDirection()
+                    updateBallVector();
+                } else {
+                    restartGame();
+                }
             }
         }, 1);
     }
@@ -375,8 +490,12 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
             if (wallDetected) {
                 clearInterval(move);
                 wallDetected = false;
-                recalculateDirection()
-                updateBallVector();
+                if (!playerScored) {
+                    recalculateDirection()
+                    updateBallVector();
+                } else {
+                    restartGame();
+                }
             }
         }, 1);
     }
@@ -390,8 +509,12 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
             if (wallDetected) {
                 clearInterval(move);
                 wallDetected = false;
-                recalculateDirection()
-                updateBallVector();
+                if (!playerScored) {
+                    recalculateDirection()
+                    updateBallVector();
+                } else {
+                    restartGame();
+                }
             }
         }, 1);
     }
@@ -408,7 +531,9 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
 
 
 function detectCollision() {
-    
+        console.log(ballCurrentY);
+        console.log(ballData.direction);
+        console.log(rightSide);
         if (ballData.Y >= gameBox.clientHeight - (ballData.radius*2)) {
             wallDetected = true;
             bottomSide = true;
@@ -423,11 +548,15 @@ function detectCollision() {
         if (ballData.X <= 0) {
             wallDetected = true;
             leftSide = true;
+            playerTwo.updateScore();
+            playerScored = true;
             console.log("player two scores");
         }
         if (ballData.X >= gameBox.clientWidth - (ballData.radius*2)) {
             wallDetected = true;
             rightSide = true;
+            playerOne.updateScore();
+            playerScored = true;
             console.log("player one scores");
         }
         
