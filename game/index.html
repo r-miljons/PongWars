@@ -16,7 +16,7 @@
         <section class="menu-section">
             <!--  left menu section --->
             <div class="menu left">
-                <input type="text" value="Player One" size="10">
+                <input id="username-one" type="text" placeholder="Player One" size="10">
                 <div class="paddle-customization">
                     <p class="change previous-left"><</p>
                     <div class="paddle-color" id="left-paddle-color"></div>
@@ -30,7 +30,7 @@
             </div>
             <!--  right menu section --->
             <div class="menu right">
-                <input type="text" value="Player Two" size="10">
+                <input id="username-two" type="text" placeholder="Player Two" size="10">
                 <div class="paddle-customization">
                     <p class="change previous-right"><</p>
                     <div class="paddle-color" id="right-paddle-color"></div>
@@ -43,6 +43,8 @@
      </div>
      <!-- Game section -->
      <div class="game-container">
+         <h2 class="announcement-text">LOL</h2>
+         <p class="info">Press "Space" to start.</p>
          <div class="top-bar">
             <div class="score">
                 <p class="player-one-name">Player One:</p>
@@ -63,6 +65,14 @@
          <div class="bottom-bar">
             
          </div>
+     </div>
+     <!-- Game End Screen -->
+     <div class="end-game-screen">
+        <h2>Winner!</h2>
+        <div class="paddle-color winner"></div>
+        <p class="winner-name">BalllaBusha</p>
+        <p class="hits">Total hits:</p>
+        <!--<button id="back">EXIT TO MENU</button>-->
      </div>
 </body>
 </html>

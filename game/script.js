@@ -1,9 +1,20 @@
+// STUFF TO FIX:
+// Total Hits Count.
+// Exit To Menu.
+
+
+
 // menu screen ----------------------------------------------------
 
 //pressing play pulls the menu upwards revealing the game
 
 const playButton = document.getElementById("play-btn");
 const startMenu = document.querySelector(".start-menu-container");
+const playerOneName = document.getElementById("username-one");
+const playerTwoName = document.getElementById("username-two");
+const announcementText = document.querySelector(".announcement-text");
+const idleText = document.querySelector(".info");
+
 
 function pullMenuUp () {
     startMenu.style.transition = "margin-top 1s ease-in";
@@ -14,18 +25,44 @@ function pullMenuUp () {
 }
 
 function pullMenuUpSpacebar (event) {
-    let keypressed = event.code;
-    if (keypressed == "Space") {
-        pullMenuUp();
-        document.removeEventListener("keypress", pullMenuUpSpacebar);
-        setTimeout(() => {
-            document.addEventListener("keydown", startGame);
-        }, 1000);
+    if (document.activeElement != playerOneName && document.activeElement != playerTwoName) {
+        let keypressed = event.code;
+        if (keypressed == "Space") {
+            pullMenuUp();
+            document.removeEventListener("keypress", pullMenuUpSpacebar);
+            document.removeEventListener("keydown", changePaddleColorKeyboard);
+            setTimeout(() => {
+                document.addEventListener("keydown", startGame);
+            }, 1000);
+        }
     }
 }
 
-playButton.addEventListener("click", pullMenuUp);
+playButton.addEventListener("click", ()=> {
+    pullMenuUp();
+    document.removeEventListener("keypress", pullMenuUpSpacebar);
+    document.removeEventListener("keydown", changePaddleColorKeyboard);
+    setTimeout(() => {
+        document.addEventListener("keydown", startGame);
+    }, 1000);
+});
+
+
 document.addEventListener("keydown", pullMenuUpSpacebar);
+
+
+
+
+function test(event) {
+    if (event.code == "KeyT") {
+        startMenu.style.marginTop = "0";
+        startMenu.style.display = "flex";
+        document.addEventListener("keypress", pullMenuUpSpacebar);
+        document.addEventListener("keydown", changePaddleColorKeyboard);
+    }
+}
+
+document.addEventListener("keydown", test);
 
 // choose the color of your paddle by clicking on ">" or "<" or "a" and "d" for player one and "←" or "→" for player two
 
@@ -72,13 +109,13 @@ function changeRight(colorObject) {
 function updateLeftPaddleColor() {
     leftPaddleMenu.style.backgroundColor = leftPaddleColor.availableColors[leftPaddleColor.colorIndex];
     playerOneColorText.textContent = leftPaddleColor.colorName[leftPaddleColor.colorIndex];
-    console.log(leftPaddleColor.colorIndex);
+    leftPaddle.style.backgroundColor = leftPaddleColor.availableColors[leftPaddleColor.colorIndex];
 }
 
 function updateRightPaddleColor() {
     rightPaddleMenu.style.backgroundColor = rightPaddleColor.availableColors[rightPaddleColor.colorIndex];
     playerTwoColorText.textContent = rightPaddleColor.colorName[rightPaddleColor.colorIndex];
-    console.log(rightPaddleColor.colorIndex);
+    rightPaddle.style.backgroundColor = rightPaddleColor.availableColors[rightPaddleColor.colorIndex];
 }
 
 function changePaddleColorKeyboard(event) {
@@ -120,6 +157,26 @@ nextRight.addEventListener("click", function () {
     updateRightPaddleColor();
 });
 
+// change player one and two names
+
+
+function updateNameOne() {
+    console.log(document.activeElement);
+    document.querySelector(".player-one-name").textContent = playerOneName.value.trim() + ":";
+    playerOneName.placeholder = `${playerOneName.value.trim()}`
+}
+
+function updateNameTwo() {
+    document.querySelector(".player-two-name").textContent = playerTwoName.value.trim() + ":";
+    playerTwoName.placeholder = `${playerTwoName.value.trim()}`
+}
+
+playerOneName.addEventListener("keyup", updateNameOne);
+playerTwoName.addEventListener("keyup", updateNameTwo);
+
+
+
+
 // game section ----------------------------------------------------------------
 
 // elements
@@ -134,6 +191,8 @@ const rightPaddle = document.querySelector(".right-paddle");
 
 const playerOne = {
     score: 0,
+    hits: 0,
+    roundsWon: 0,
     updateScore() {
         this.score += 1;
         document.querySelector(".player-one-score").textContent = this.score;
@@ -141,11 +200,18 @@ const playerOne = {
     resetScore() {
         this.score = 0;
         document.querySelector(".player-one-score").textContent = this.score;
+    },
+    reset() {
+        this.score = 0;
+        this.hits = 0;
+        this.roundsWon = 0;
     }
 }
 
 playerTwo = {
     score: 0,
+    hits: 0,
+    roundsWon: 0,
     updateScore() {
         this.score += 1;
         document.querySelector(".player-two-score").textContent = this.score;
@@ -153,6 +219,11 @@ playerTwo = {
     resetScore() {
         this.score = 0;
         document.querySelector(".player-two-score").textContent = this.score;
+    },
+    reset() {
+        this.score = 0;
+        this.hits = 0;
+        this.roundsWon = 0;
     }
 }
 
@@ -247,6 +318,7 @@ const rightPaddleData = {
 
 let gameStarted = false;
 let playerScored = false;
+let currentRound = 0;
 
 // setting initial Y position for paddles
 
@@ -274,27 +346,64 @@ let leftPaddleGoingDown = false;
 let rightPaddleGoingUp = false;
 let rightPaddleGoingDown = false;
 
-
+playerOne.roundsWon =2;
 // pressing spacebar starts the game by throwing the ball in a random players direction
 function startGame(event) {
     if (!gameStarted) {
         if (event.code == "Space") {
             gameStarted = true;
+            currentRound ++;
             playerOne.resetScore();
             playerTwo.resetScore();
-            let randomBallAngle;
-            let randomPlayer = 1 + Math.floor(Math.random()*2);
-            if (randomPlayer == 1) {
-                randomBallAngle = 205 + Math.floor(Math.random()*131);
-            } else if (randomPlayer == 2) {
-                randomBallAngle = 25 + Math.floor(Math.random()*131);
-            }
-            updateBallVector(randomBallAngle); 
+            announcementText.style.display = "block";
+            idleText.style.display = "none";
+            announcementText.textContent = "Round " + currentRound;
+            setTimeout(() => {
+                announcementText.style.display = "none";
+                let randomBallAngle;
+                let randomPlayer = 1 + Math.floor(Math.random()*2);
+                if (randomPlayer == 1) {
+                    randomBallAngle = 205 + Math.floor(Math.random()*131);
+                } else if (randomPlayer == 2) {
+                    randomBallAngle = 25 + Math.floor(Math.random()*131);
+                }
+                updateBallVector(randomBallAngle);
+            },1000); 
         }
     }
 }
 
-// 
+function endGame() {
+    document.querySelector(".end-game-screen").style.display = "flex";
+    document.removeEventListener("keydown", startGame);
+    currentRound = 0;
+    if (playerOne.roundsWon == 3) {
+        document.querySelector(".winner").style.backgroundColor = leftPaddleColor.availableColors[leftPaddleColor.colorIndex];
+        document.querySelector(".winner-name").textContent = playerOneName.placeholder;
+        document.querySelector(".hits").textContent = "Total hits: " + playerOne.hits;
+    }
+    if (playerTwo.roundsWon == 3) {
+        document.querySelector(".winner").style.backgroundColor = rightPaddleColor.availableColors[rightPaddleColor.colorIndex];
+        document.querySelector(".winner-name").textContent = playerTwoName.placeholder;
+        document.querySelector(".hits").textContent = "Total hits: " + playerTwo.hits;
+    }
+    playerOne.reset();
+    playerTwo.reset();
+    /*document.addEventListener("keydown", exitGame); */
+}
+/*
+function exitGame(event) {
+
+    if (event.code == "Space") {
+        startMenu.style.marginTop = "0";
+        startMenu.style.display = "flex";
+        document.querySelector(".end-game-screen").style.display = "none";
+        document.removeEventListener("keydown", startGame);
+        idleText.textContent = 'Press "Space" to start.';
+        document.removeEventListener("keydown", exitGame);
+    }
+}
+*/ 
 
 function restartGame() {
     playerScored = false;
@@ -311,6 +420,31 @@ function restartGame() {
 
     if (playerOne.score == 5 || playerTwo.score == 5) {
         gameStarted = false;
+        if (playerOne.score == 5) {
+            announcementText.textContent = `${playerOneName.placeholder} Wins Round!`;
+            announcementText.style.display = "block";
+            playerOne.roundsWon += 1;
+            if (playerOne.roundsWon == 3 || playerTwo.roundsWon == 3) {
+                endGame();
+            }
+            setTimeout(() => {
+                announcementText.style.display = "none";
+            },1000);
+        }
+        if (playerTwo.score == 5) {
+            announcementText.textContent = `${playerTwoName.placeholder} Wins Round!`;
+            console.log(playerTwoName.placeholder);
+            announcementText.style.display = "block";
+            playerTwo.roundsWon += 1;
+            if (playerOne.roundsWon == 3 || playerTwo.roundsWon == 3) {
+                endGame();
+            }
+            setTimeout(() => {
+                announcementText.style.display = "none";
+            },1000);
+        }
+        idleText.textContent = 'Press "Space" to continue.';
+        idleText.style.display = "block";
     } else {
         setTimeout(() => {
             if (playerOne.score > playerTwo.score) {
@@ -564,6 +698,7 @@ function detectCollision() {
             // check wether the ball is touching the left paddle
             if (leftPaddleData.Y - leftPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && leftPaddleData.Y + leftPaddleData.height/2 >= ballData.Y) {
                 wallDetected = true;
+                playerOne.hits += 1;
                 const topOfPaddle = leftPaddleData.Y - ballData.radius - (leftPaddleData.height/2);
                 const bottomOfPaddle = leftPaddleData.Y + ballData.radius + (leftPaddleData.height/2);
                 const centerOfBall = ballData.Y + ballData.radius;
@@ -587,7 +722,7 @@ function detectCollision() {
             // same for the right paddle
             if (rightPaddleData.Y - rightPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && rightPaddleData.Y + rightPaddleData.height/2 >= ballData.Y) {
                 wallDetected = true;
-
+                playerTwo.hits += 1;
                 const topOfPaddle = rightPaddleData.Y - ballData.radius - (rightPaddleData.height/2);
                 const bottomOfPaddle = rightPaddleData.Y + ballData.radius + (rightPaddleData.height/2);
                 const centerOfBall = ballData.Y + ballData.radius;
