@@ -346,7 +346,6 @@ let leftPaddleGoingDown = false;
 let rightPaddleGoingUp = false;
 let rightPaddleGoingDown = false;
 
-playerOne.roundsWon =2;
 // pressing spacebar starts the game by throwing the ball in a random players direction
 function startGame(event) {
     if (!gameStarted) {
