@@ -33,6 +33,11 @@ function pullMenuUpSpacebar (event) {
             document.removeEventListener("keydown", changePaddleColorKeyboard);
             setTimeout(() => {
                 document.addEventListener("keydown", startGame);
+                document.addEventListener("keyup", stopPaddle);
+                document.addEventListener("keydown", moveLeftPaddleUp);
+                document.addEventListener("keydown", moveLeftPaddleDown);
+                document.addEventListener("keydown", moveRightPaddleUp);
+                document.addEventListener("keydown", moveRightPaddleDown);
             }, 1000);
         }
     }
@@ -44,6 +49,11 @@ playButton.addEventListener("click", ()=> {
     document.removeEventListener("keydown", changePaddleColorKeyboard);
     setTimeout(() => {
         document.addEventListener("keydown", startGame);
+        document.addEventListener("keyup", stopPaddle);
+        document.addEventListener("keydown", moveLeftPaddleUp);
+        document.addEventListener("keydown", moveLeftPaddleDown);
+        document.addEventListener("keydown", moveRightPaddleUp);
+        document.addEventListener("keydown", moveRightPaddleDown);
     }, 1000);
 });
 
@@ -108,19 +118,21 @@ function updateRightPaddleColor() {
 }
 
 function changePaddleColorKeyboard(event) {
-    let keypressed = event.code;
-    if (keypressed == "KeyA") {
-        changeLeft(leftPaddleColor);
-        updateLeftPaddleColor();
-    } else if (keypressed == "KeyD") {
-        changeRight(leftPaddleColor);
-        updateLeftPaddleColor();
-    } else if (keypressed == "ArrowLeft") {
-        changeLeft(rightPaddleColor);
-        updateRightPaddleColor();
-    } else if (keypressed == "ArrowRight") {
-        changeRight(rightPaddleColor);
-        updateRightPaddleColor();
+    if (document.activeElement != playerOneName && document.activeElement != playerTwoName) {
+        let keypressed = event.code;
+        if (keypressed == "KeyA") {
+            changeLeft(leftPaddleColor);
+            updateLeftPaddleColor();
+        } else if (keypressed == "KeyD") {
+            changeRight(leftPaddleColor);
+            updateLeftPaddleColor();
+        } else if (keypressed == "ArrowLeft") {
+            changeLeft(rightPaddleColor);
+            updateRightPaddleColor();
+        } else if (keypressed == "ArrowRight") {
+            changeRight(rightPaddleColor);
+            updateRightPaddleColor();
+        }
     }
 }
 
@@ -368,6 +380,11 @@ comingFromEndScreen = false;
 function endGame() {
     document.querySelector(".end-game-screen").style.display = "flex";
     document.removeEventListener("keydown", startGame);
+    document.removeEventListener("keyup", stopPaddle);
+    document.removeEventListener("keydown", moveLeftPaddleUp);
+    document.removeEventListener("keydown", moveLeftPaddleDown);
+    document.removeEventListener("keydown", moveRightPaddleUp);
+    document.removeEventListener("keydown", moveRightPaddleDown);
     
     if (playerOne.roundsWon == 3) {
         document.querySelector(".winner").style.backgroundColor = leftPaddleColor.availableColors[leftPaddleColor.colorIndex];
@@ -486,7 +503,13 @@ function moveBall(percentX, percentY) {
         trail.style.top = Y + "px"; 
 }
 
- 
+const spawnTrail = setInterval(() => {
+    if (gameStarted == true) {
+        let trailElement = trail.cloneNode(true);
+        gameBox.appendChild(trailElement);
+        setTimeout(()=>{gameBox.removeChild(trailElement);}, 1000);
+    }
+}, 50) 
 
 
 
@@ -918,13 +941,13 @@ function stopPaddle(event) {
     }
 }
 
+/*
 document.addEventListener("keyup", stopPaddle);
 document.addEventListener("keydown", moveLeftPaddleUp);
 document.addEventListener("keydown", moveLeftPaddleDown);
 document.addEventListener("keydown", moveRightPaddleUp);
 document.addEventListener("keydown", moveRightPaddleDown);
-
-
+*/
 
 
 

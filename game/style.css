@@ -183,7 +183,19 @@ body {
     width: 24px;
     background-color: rgb(255, 0, 238);
     box-shadow: 0 0 1rem rgb(255, 0, 238);
+    border-radius: 0.2rem;
     position: absolute;
+    opacity: 0.5;
+    animation: trail 1s linear;
+}
+
+@keyframes trail {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(0.1);
+    }
 }
 
 .right-paddle {
