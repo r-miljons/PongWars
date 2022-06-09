@@ -27,7 +27,7 @@ function pullMenuUp () {
 function pullMenuUpSpacebar (event) {
     if (document.activeElement != playerOneName && document.activeElement != playerTwoName) {
         let keypressed = event.code;
-        if (keypressed == "Space") {
+        if (keypressed == "Space" && comingFromEndScreen == false /* very shitty way of fixing this firing when not needed */ ) {
             pullMenuUp();
             document.removeEventListener("keypress", pullMenuUpSpacebar);
             document.removeEventListener("keydown", changePaddleColorKeyboard);
@@ -48,21 +48,10 @@ playButton.addEventListener("click", ()=> {
 });
 
 
+
+
 document.addEventListener("keydown", pullMenuUpSpacebar);
 
-
-
-
-function test(event) {
-    if (event.code == "KeyT") {
-        startMenu.style.marginTop = "0";
-        startMenu.style.display = "flex";
-        document.addEventListener("keypress", pullMenuUpSpacebar);
-        document.addEventListener("keydown", changePaddleColorKeyboard);
-    }
-}
-
-document.addEventListener("keydown", test);
 
 // choose the color of your paddle by clicking on ">" or "<" or "a" and "d" for player one and "←" or "→" for player two
 
@@ -346,10 +335,12 @@ let leftPaddleGoingDown = false;
 let rightPaddleGoingUp = false;
 let rightPaddleGoingDown = false;
 
+
 // pressing spacebar starts the game by throwing the ball in a random players direction
 function startGame(event) {
     if (!gameStarted) {
         if (event.code == "Space") {
+            document.removeEventListener("keydown", startGame);
             gameStarted = true;
             currentRound ++;
             playerOne.resetScore();
@@ -372,10 +363,12 @@ function startGame(event) {
     }
 }
 
+comingFromEndScreen = false;
+
 function endGame() {
     document.querySelector(".end-game-screen").style.display = "flex";
     document.removeEventListener("keydown", startGame);
-    currentRound = 0;
+    
     if (playerOne.roundsWon == 3) {
         document.querySelector(".winner").style.backgroundColor = leftPaddleColor.availableColors[leftPaddleColor.colorIndex];
         document.querySelector(".winner-name").textContent = playerOneName.placeholder;
@@ -386,23 +379,26 @@ function endGame() {
         document.querySelector(".winner-name").textContent = playerTwoName.placeholder;
         document.querySelector(".hits").textContent = "Total hits: " + playerTwo.hits;
     }
+    currentRound = 0;
     playerOne.reset();
     playerTwo.reset();
-    /*document.addEventListener("keydown", exitGame); */
+    playerOne.resetScore();
+    playerTwo.resetScore();
+    comingFromEndScreen = true;
+    document.addEventListener("keydown", exitGame);
+    document.getElementById("back").addEventListener("click", exitGame);
 }
-/*
-function exitGame(event) {
 
-    if (event.code == "Space") {
+
+function exitGame() {
         startMenu.style.marginTop = "0";
         startMenu.style.display = "flex";
         document.querySelector(".end-game-screen").style.display = "none";
-        document.removeEventListener("keydown", startGame);
         idleText.textContent = 'Press "Space" to start.';
         document.removeEventListener("keydown", exitGame);
-    }
+        setTimeout(() => {comingFromEndScreen = false}, 1000);
 }
-*/ 
+ 
 
 function restartGame() {
     playerScored = false;
@@ -417,12 +413,16 @@ function restartGame() {
     rightSide = false;
     leftSide = false; 
 
+    //next round
+
     if (playerOne.score == 5 || playerTwo.score == 5) {
         gameStarted = false;
+        document.addEventListener("keydown", startGame);
         if (playerOne.score == 5) {
             announcementText.textContent = `${playerOneName.placeholder} Wins Round!`;
             announcementText.style.display = "block";
             playerOne.roundsWon += 1;
+            // game ends and winner is announced
             if (playerOne.roundsWon == 3 || playerTwo.roundsWon == 3) {
                 endGame();
             }
@@ -435,6 +435,7 @@ function restartGame() {
             console.log(playerTwoName.placeholder);
             announcementText.style.display = "block";
             playerTwo.roundsWon += 1;
+            // game ends and winner is announced
             if (playerOne.roundsWon == 3 || playerTwo.roundsWon == 3) {
                 endGame();
             }
@@ -664,9 +665,6 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
 
 
 function detectCollision() {
-        console.log(ballCurrentY);
-        console.log(ballData.direction);
-        console.log(rightSide);
         if (ballData.Y >= gameBox.clientHeight - (ballData.radius*2)) {
             wallDetected = true;
             bottomSide = true;
@@ -697,7 +695,7 @@ function detectCollision() {
             // check wether the ball is touching the left paddle
             if (leftPaddleData.Y - leftPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && leftPaddleData.Y + leftPaddleData.height/2 >= ballData.Y) {
                 wallDetected = true;
-                playerOne.hits += 1;
+                addHit(1);
                 const topOfPaddle = leftPaddleData.Y - ballData.radius - (leftPaddleData.height/2);
                 const bottomOfPaddle = leftPaddleData.Y + ballData.radius + (leftPaddleData.height/2);
                 const centerOfBall = ballData.Y + ballData.radius;
@@ -721,7 +719,7 @@ function detectCollision() {
             // same for the right paddle
             if (rightPaddleData.Y - rightPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && rightPaddleData.Y + rightPaddleData.height/2 >= ballData.Y) {
                 wallDetected = true;
-                playerTwo.hits += 1;
+                addHit(2);
                 const topOfPaddle = rightPaddleData.Y - ballData.radius - (rightPaddleData.height/2);
                 const bottomOfPaddle = rightPaddleData.Y + ballData.radius + (rightPaddleData.height/2);
                 const centerOfBall = ballData.Y + ballData.radius;
@@ -742,6 +740,21 @@ function detectCollision() {
         }
 
         
+}
+
+// adds a hit point on each successful hit of the ball, this is shown at the end of the game
+let ballHit = false
+function addHit(player) {
+    if (!ballHit) {
+        ballHit = true;
+        if (player == 1) {
+            playerOne.hits += 1;
+        }
+        if (player == 2) {
+            playerTwo.hits += 1;
+        }
+        setTimeout(() => {ballHit = false;}, 100);
+    }
 }
 
 

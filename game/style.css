@@ -29,6 +29,7 @@ body {
     box-shadow: 0 0 2rem black;
     z-index: 10;
     position: absolute;
+    text-align: center;
 }
 
 #title-text {
@@ -44,6 +45,7 @@ body {
     height: max-content;
     width: 100%;
     max-width: 800px;
+    padding-bottom: 1rem;
 }
 
 .menu input {
@@ -127,6 +129,7 @@ body {
     display: grid;
     grid-template-rows: 3rem auto 3rem;
     z-index: 0;
+    overflow: hidden;
 }
 
 .top-bar {
@@ -268,6 +271,7 @@ body {
     gap: 1rem;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
 .end-game-screen h2 {
