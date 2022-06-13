@@ -1,7 +1,3 @@
-// STUFF TO FIX:
-// Total Hits Count.
-// Exit To Menu.
-
 
 
 // menu screen ----------------------------------------------------
@@ -89,6 +85,8 @@ const rightPaddleColor = {
     colorIndex: 0
 }
 
+//change the color of paddles
+
 function changeLeft(colorObject) {
     if (colorObject.colorIndex == 0) {
         colorObject.colorIndex = colorObject.availableColors.length - 1;
@@ -162,7 +160,6 @@ nextRight.addEventListener("click", function () {
 
 
 function updateNameOne() {
-    console.log(document.activeElement);
     document.querySelector(".player-one-name").textContent = playerOneName.value.trim() + ":";
     playerOneName.placeholder = `${playerOneName.value.trim()}`
 }
@@ -263,7 +260,10 @@ const ballData = {
     },
     set direction(degrees) {
         this._direction = degrees;
-    }
+    },
+    resetSpeed() {
+        this._speed = 0.4;
+    },
 }
 
 const leftPaddleData = {
@@ -288,6 +288,10 @@ const leftPaddleData = {
     },
     set Y(number) {
         this._Y = number;
+    },
+    reset() {
+        this._height = 128;
+        this._speed = 0.8;
     }
 }
 
@@ -314,12 +318,17 @@ const rightPaddleData = {
     },
     set Y(number) {
         this._Y = number;
+    },
+    reset() {
+        this._height = 128;
+        this._speed = 0.8;
     }
 }
 
 let gameStarted = false;
 let playerScored = false;
 let currentRound = 0;
+let lastToTouchBall; //used for surprise box
 
 // setting initial Y position for paddles
 
@@ -407,13 +416,15 @@ function endGame() {
 }
 
 
-function exitGame() {
+function exitGame(event) {
+    if (event.code == "Space") {
         startMenu.style.marginTop = "0";
         startMenu.style.display = "flex";
         document.querySelector(".end-game-screen").style.display = "none";
         idleText.textContent = 'Press "Space" to start.';
         document.removeEventListener("keydown", exitGame);
         setTimeout(() => {comingFromEndScreen = false}, 1000);
+    }
 }
  
 
@@ -428,7 +439,12 @@ function restartGame() {
     ball.style.top =  (ballData.Y - ballData.radius) + "px";
     trail.style.top = (ballData.Y - ballData.radius) + "px";
     rightSide = false;
-    leftSide = false; 
+    leftSide = false;
+    topSide = false;
+    bottomSide = false; 
+    leftPaddleData.reset();
+    rightPaddleData.reset();
+    lastToTouchBall = 0;
 
     //next round
 
@@ -449,7 +465,6 @@ function restartGame() {
         }
         if (playerTwo.score == 5) {
             announcementText.textContent = `${playerTwoName.placeholder} Wins Round!`;
-            console.log(playerTwoName.placeholder);
             announcementText.style.display = "block";
             playerTwo.roundsWon += 1;
             // game ends and winner is announced
@@ -601,9 +616,9 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
     // non-right angles
     if (degrees > 0 && degrees < 90) {
         let radians = degrees * (Math.PI / 180);
-        let x = ballData.speed * Math.sin(radians);
-        let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
         let move = setInterval(() => {
+            let x = ballData.speed * Math.sin(radians);
+            let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
             moveBall(ballCurrentX += x, ballCurrentY -= y);
             detectCollision();
             if (wallDetected) {
@@ -620,9 +635,9 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
     }
     if (degrees > 270 && degrees < 360) {
         let radians = degrees * (Math.PI / 180);
-        let x = ballData.speed * Math.sin(radians);
-        let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
         let move = setInterval(() => {
+            let x = ballData.speed * Math.sin(radians);
+            let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
             moveBall(ballCurrentX += x, ballCurrentY -= y);
             detectCollision();
             if (wallDetected) {
@@ -639,9 +654,9 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
     }
     if (degrees > 90 && degrees < 180) {
         let radians = degrees * (Math.PI / 180);
-        let x = ballData.speed * Math.sin(radians);
-        let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
         let move = setInterval(() => {
+            let x = ballData.speed * Math.sin(radians);
+            let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
             moveBall(ballCurrentX += x, ballCurrentY += y);
             detectCollision();
             if (wallDetected) {
@@ -658,9 +673,9 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
     }
     if (degrees > 180 && degrees < 270) {
         let radians = degrees * (Math.PI / 180);
-        let x = ballData.speed * Math.sin(radians);
-        let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
         let move = setInterval(() => {
+            let x = ballData.speed * Math.sin(radians);
+            let y = Math.sqrt((ballData.speed * ballData.speed) - (x * x));
             moveBall(ballCurrentX += x, ballCurrentY += y);
             detectCollision();
             if (wallDetected) {
@@ -688,6 +703,7 @@ function updateBallVector(degrees = ballData.direction, speed = ballData.speed) 
 
 
 function detectCollision() {
+    
         if (ballData.Y >= gameBox.clientHeight - (ballData.radius*2)) {
             wallDetected = true;
             bottomSide = true;
@@ -717,6 +733,7 @@ function detectCollision() {
         if (ballData.X <= leftPaddleWall) {
             // check wether the ball is touching the left paddle
             if (leftPaddleData.Y - leftPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && leftPaddleData.Y + leftPaddleData.height/2 >= ballData.Y) {
+                lastToTouchBall = 1;
                 wallDetected = true;
                 addHit(1);
                 const topOfPaddle = leftPaddleData.Y - ballData.radius - (leftPaddleData.height/2);
@@ -741,6 +758,7 @@ function detectCollision() {
         if (ballData.X >= rightPaddleWall) {
             // same for the right paddle
             if (rightPaddleData.Y - rightPaddleData.height/2 <= ballData.Y + (ballData.radius*2) && rightPaddleData.Y + rightPaddleData.height/2 >= ballData.Y) {
+                lastToTouchBall = 2;
                 wallDetected = true;
                 addHit(2);
                 const topOfPaddle = rightPaddleData.Y - ballData.radius - (rightPaddleData.height/2);
@@ -762,6 +780,22 @@ function detectCollision() {
             }
         }
 
+        // wait to spawn surpise box
+        if ((playerOne.hits > 0 && playerOne.hits % 5 == 0 && surpriseObject.boxAvailableForPickup == false && surpriseObject.effectActive == false) || (playerTwo.hits > 0 && playerTwo.hits % 5 == 0 && surpriseObject.boxAvailableForPickup == false && surpriseObject.effectActive == false)) {
+            surpriseObject.boxAvailableForPickup = true;
+            surpriseObject.spawnRandom();
+        }
+
+        // ball hits surprise box
+
+        if (ballData.X + (ballData.radius*2) >= surpriseBox.offsetLeft && ballData.X <= surpriseBox.offsetLeft + surpriseBox.clientWidth) {
+            if (ballData.Y + (ballData.radius*2) >= surpriseBox.offsetTop && ballData.Y <= surpriseBox.offsetTop + surpriseBox.clientHeight) {
+                surpriseObject.boxAvailableForPickup = false;
+                surpriseObject.applyEffect();
+                console.log("Picked up surprise!");
+            }
+        }
+
         
 }
 
@@ -779,6 +813,154 @@ function addHit(player) {
         setTimeout(() => {ballHit = false;}, 100);
     }
 }
+
+// gives the surprise box effect to the player who last touched the ball
+const surpriseBox = document.querySelector(".surprise-box");
+
+
+const surpriseObject = {
+    effects: ["smallPaddle", "bouncyPaddle"],
+    location: [0,0],
+    currentEffect: "",
+    effectDuration: 10000,
+    effectActive: false,
+    boxAvailableForPickup: false,
+    remove() {
+        surpriseBox.style.display = "none";
+    },
+    spawnRandom() {
+            if (this.effectActive == false || this.effectActive == false) {
+                this.currentEffect = this.effects[Math.floor(Math.random() * this.effects.length)];
+                this.location[0] = (gameBox.clientWidth * 0.2) + (Math.floor(Math.random() * ((gameBox.clientWidth * 0.6) - surpriseBox.clientWidth)));
+                this.location[1] = Math.floor(Math.random() * (gameBox.clientHeight - surpriseBox.clientHeight*1.5));
+                surpriseBox.style.left = `${this.location[0]}px`;
+                surpriseBox.style.top = `${this.location[1]}px`;
+                surpriseBox.style.display = "block";
+                setTimeout(() => {
+                    this.remove();
+                    this.boxAvailableForPickup = false;
+                }, 10000);
+            }
+    },
+    smallPaddle() {
+        this.remove();
+        this.effectActive = true;
+        if (lastToTouchBall == 1) {
+            leftPaddleData.height = leftPaddleData.height/2;
+            leftPaddle.style.boxShadow = "0 0 1rem rgb(226, 32, 2)";
+            setTimeout(() => {
+                this.effectActive = false;
+                leftPaddleData.height = 128;
+                leftPaddle.style.boxShadow = "";
+            }, this.effectDuration);
+        } else if (lastToTouchBall == 2) {
+            rightPaddleData.height = rightPaddleData.height/2;
+            rightPaddle.style.boxShadow = "0 0 1rem rgb(226, 32, 2)";
+            setTimeout(() => {
+                this.effectActive = false;
+                rightPaddleData.height = 128;
+                rightPaddle.style.boxShadow = "";
+            }, this.effectDuration);
+        }
+    },
+    bouncyPaddle() {
+        this.remove();
+        this.effectActive = true;
+        let ongoing = false;
+        if (lastToTouchBall == 1) {
+            leftPaddle.style.boxShadow = "0 0 2rem rgb(0, 149, 255)";
+            let waitForTurn = setInterval(() => { if (lastToTouchBall == 2) { 
+                clearInterval(waitForTurn);
+                let checkForPaddle = setInterval(() => {
+                    if (lastToTouchBall == 1) {
+                        if (!ongoing) {
+                            ongoing = true;
+                            ballData.speed = ballData.speed*2;
+                            trail.style.boxShadow = "0 0 1rem rgb(0, 149, 255)";
+                            trail.style.backgroundColor = "rgb(0, 149, 255)";
+                        }
+                    } else if (lastToTouchBall == 2) {
+                        if (ongoing) {
+                            ongoing = false;
+                            ballData.resetSpeed();
+                            trail.style.boxShadow = "";
+                            trail.style.backgroundColor = "";
+                        }
+                    }
+                    if (lastToTouchBall == 0) {
+                        ongoing = false;
+                        ballData.resetSpeed();
+                        trail.style.boxShadow = "";
+                        trail.style.backgroundColor = "";
+                    }
+                },1);
+                setTimeout(() => {
+                    try {
+                        clearInterval(checkForPaddle);
+                    } catch {
+                        console.log("Effect was discarded");
+                    }
+                    this.effectActive = false;
+                    ballData.resetSpeed();
+                    leftPaddle.style.boxShadow = "none";
+                    trail.style.boxShadow = "";
+                    trail.style.backgroundColor = "";
+                }, this.effectDuration);
+            }
+            },1);
+        } else if (lastToTouchBall == 2) {
+            rightPaddle.style.boxShadow = "0 0 2rem rgb(0, 149, 255)";
+            let waitForTurn = setInterval(() => { if (lastToTouchBall == 1) {
+                clearInterval(waitForTurn);
+                let checkForPaddle = setInterval(() => {
+                    if (lastToTouchBall == 2) {
+                        if (!ongoing) {
+                            ongoing = true;
+                            ballData.speed = ballData.speed*2;
+                            trail.style.boxShadow = "0 0 1rem rgb(0, 149, 255)";
+                            trail.style.backgroundColor = "rgb(0, 149, 255)";
+                        }
+                    } else if (lastToTouchBall == 1) {
+                        if (ongoing) {
+                            ongoing = false;
+                            ballData.resetSpeed();
+                            trail.style.boxShadow = "";
+                            trail.style.backgroundColor = "";
+                        }
+                    }
+                    if (lastToTouchBall == 0) {
+                        ongoing = false;
+                        ballData.resetSpeed();
+                        trail.style.boxShadow = "";
+                        trail.style.backgroundColor = "";
+                    }
+                },1);
+                setTimeout(() => {
+                    try {
+                        clearInterval(checkForPaddle);
+                    } catch {
+                        console.log("Effect was discarded - Player scored");
+                    }
+                    this.effectActive = false;
+                    ballData.resetSpeed();
+                    rightPaddle.style.boxShadow = "none";
+                    trail.style.boxShadow = "";
+                    trail.style.backgroundColor = "";
+                }, this.effectDuration);
+            }
+            },1);
+        } else {
+            this.bouncyPaddle();
+        }
+    },
+    applyEffect() {
+        switch(this.currentEffect) {
+            case "smallPaddle": this.smallPaddle(); break;
+            case "bouncyPaddle": this.bouncyPaddle(); break;
+        }
+    },
+}
+
 
 
 //depending on which side the ball hit, this function calculates the new direction of the ball
@@ -965,7 +1147,7 @@ document.addEventListener("keypress", logPressedKey);
 // moves ball around using numpad (for testing purposes)
 
 let noClipActive = false;
-let noClipSpeed = 0.1;
+let noClipSpeed = 0.5;
 
 function ballNoClip(event) {
     if (!noClipActive) {
